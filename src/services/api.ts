@@ -4,10 +4,10 @@ import { storage } from '@/utils/storage';
 
 const getBaseUrl = () => {
   if (Platform.OS === 'web') {
-    return 'http://localhost:5000/api';
+    return 'https://remindly-backend-xyre.onrender.com/api';
   }
 
-  return 'http://10.5.33.139:5000/api';
+  return 'https://remindly-backend-xyre.onrender.com/api';
 };
 
 export const api = axios.create({
@@ -15,7 +15,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 60000,
 });
 
 api.interceptors.request.use(async (config) => {
