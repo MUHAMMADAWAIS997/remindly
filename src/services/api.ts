@@ -6,7 +6,7 @@ const getBaseUrl = () => {
   if (Platform.OS === 'web') {
     return 'http://localhost:5000/api';
   }
-  // Physical device or emulator on local Wi-Fi network
+
   return 'http://10.5.33.139:5000/api';
 };
 

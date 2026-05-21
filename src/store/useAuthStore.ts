@@ -89,7 +89,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await api.post('/auth/logout');
     } catch (err) {
-      // ignore server logout error
+      
     }
     await storage.removeItem('auth_token');
     set({ token: null, user: null });

@@ -37,18 +37,15 @@ export default function HomeScreen() {
       >
         {/* Welcome Header */}
         <View style={styles.welcomeHeader}>
-          <View>
-            <Text style={styles.greeting}>Hello, {user?.name ? user.name.split(' ')[0] : 'there'} 👋</Text>
-            <Text style={styles.subGreeting}>Here is your subscription overview</Text>
-          </View>
+          <Text style={styles.greeting}>Hi, {user?.name ? user.name.split(' ')[0] : 'there'}</Text>
         </View>
 
-        {/* Total Spending Header Card */}
+        {/* Summary Card */}
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryLabel}>Total Active Monthly Outflow</Text>
+          <Text style={styles.summaryLabel}>Monthly spend</Text>
           <Text style={styles.summaryAmount}>${totalMonthly.toFixed(2)}</Text>
           <View style={styles.summaryFooter}>
-            <Text style={styles.summarySubtext}>Based on {activeCount} active subscriptions</Text>
+            <Text style={styles.summarySubtext}>{activeCount} active subscriptions</Text>
           </View>
         </View>
 
@@ -91,7 +88,7 @@ export default function HomeScreen() {
             <View style={styles.emptyState}>
               <Ionicons name="folder-open-outline" size={48} color={theme.colors.textMuted} />
               <Text style={styles.emptyStateTitle}>No upcoming renewals</Text>
-              <Text style={styles.emptyStateSubtitle}>You're all caught up! Click '+' above to add your subscriptions.</Text>
+              <Text style={styles.emptyStateSubtitle}>Tap + to add your first subscription.</Text>
               <TouchableOpacity style={styles.emptyAddButton} onPress={() => router.push('/subscriptions/add')}>
                 <Text style={styles.emptyAddButtonText}>Add Subscription</Text>
               </TouchableOpacity>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -9,10 +9,17 @@ export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out of Remindly?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: logout },
-    ]);
+    if (Platform.OS === 'web') {
+      const confirm = window.confirm("You'll need to sign in again. Are you sure you want to log out?");
+      if (confirm) {
+        logout();
+      }
+    } else {
+      Alert.alert('Log out', "You'll need to sign in again.", [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log Out', style: 'destructive', onPress: logout },
+      ]);
+    }
   };
 
   return (
@@ -32,7 +39,7 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
-              <Text style={styles.menuItemText}>Notification Settings</Text>
+              <Text style={styles.menuItemText}>Notifications</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
           </TouchableOpacity>
@@ -40,7 +47,7 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.text} />
-              <Text style={styles.menuItemText}>Privacy & Security</Text>
+              <Text style={styles.menuItemText}>Privacy</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
           </TouchableOpacity>
@@ -48,7 +55,7 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="help-circle-outline" size={22} color={theme.colors.text} />
-              <Text style={styles.menuItemText}>Help & Support</Text>
+              <Text style={styles.menuItemText}>Help</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
           </TouchableOpacity>

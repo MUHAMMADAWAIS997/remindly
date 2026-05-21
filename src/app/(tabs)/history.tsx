@@ -23,8 +23,7 @@ export default function HistoryScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Subscription History</Text>
-          <Text style={styles.subtitle}>Records of past and expired services</Text>
+          <Text style={styles.title}>History</Text>
         </View>
 
         <ScrollView
@@ -41,8 +40,8 @@ export default function HistoryScreen() {
           ) : expiredList.length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="time-outline" size={54} color={theme.colors.textMuted} />
-              <Text style={styles.emptyTitle}>No Expired Subscriptions</Text>
-              <Text style={styles.emptySubtitle}>All your tracked subscriptions are currently active!</Text>
+              <Text style={styles.emptyTitle}>Nothing here</Text>
+              <Text style={styles.emptySubtitle}>All your subscriptions are active.</Text>
             </View>
           ) : (
             expiredList.map((item) => <SubscriptionCard key={item._id} item={item} dimmed />)

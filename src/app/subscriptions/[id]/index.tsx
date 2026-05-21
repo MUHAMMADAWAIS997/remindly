@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,25 +27,39 @@ export default function SubscriptionDetailScreen() {
   );
 
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Subscription',
-      `Are you sure you want to permanently remove "${subscription?.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            if (id) {
-              const success = await deleteSubscription(id);
-              if (success) {
-                router.back();
-              }
+    if (Platform.OS === 'web') {
+      const confirm = window.confirm(`Are you sure you want to permanently remove "${subscription?.name}"?`);
+      if (confirm) {
+        (async () => {
+          if (id) {
+            const success = await deleteSubscription(id);
+            if (success) {
+              router.back();
             }
+          }
+        })();
+      }
+    } else {
+      Alert.alert(
+        'Delete Subscription',
+        `Are you sure you want to permanently remove "${subscription?.name}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              if (id) {
+                const success = await deleteSubscription(id);
+                if (success) {
+                  router.back();
+                }
+              }
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const getStatusBadge = (status?: SubscriptionItem['statusInfo']['status']) => {
@@ -76,7 +90,7 @@ export default function SubscriptionDetailScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Subscription Details</Text>
+          <Text style={styles.headerTitle}>Details</Text>
           <View style={{ width: 24 }} />
         </View>
         <View style={styles.centerLoading}>
@@ -96,7 +110,7 @@ export default function SubscriptionDetailScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Subscription Details</Text>
+        <Text style={styles.headerTitle}>Details</Text>
         <TouchableOpacity onPress={() => router.push(`/subscriptions/${id}/edit`)} style={styles.editButton}>
           <Ionicons name="pencil-outline" size={22} color={theme.colors.primary} />
         </TouchableOpacity>
@@ -118,12 +132,12 @@ export default function SubscriptionDetailScreen() {
           <View style={styles.amountDivider} />
 
           <View style={styles.amountRow}>
-            <Text style={styles.amountLabel}>Billing Amount</Text>
+            <Text style={styles.amountLabel}>Amount</Text>
             <Text style={styles.amountValue}>${subscription.amount.toFixed(2)}</Text>
           </View>
 
           <View style={styles.statusRow}>
-            <Text style={styles.amountLabel}>Current Status</Text>
+            <Text style={styles.amountLabel}>Status</Text>
             <View style={[styles.statusTag, { backgroundColor: badge.bg }]}>
               {badge.icon}
               <Text style={[styles.statusText, { color: badge.text }]}>
@@ -135,13 +149,13 @@ export default function SubscriptionDetailScreen() {
 
         {/* Dates Card */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Billing Timeline</Text>
+          <Text style={styles.sectionTitle}>Timeline</Text>
           <View style={styles.timelineRow}>
             <View style={styles.timelineIcon}>
               <Ionicons name="calendar-outline" size={20} color={theme.colors.primary} />
             </View>
             <View style={styles.timelineDetails}>
-              <Text style={styles.timelineLabel}>Start Date</Text>
+              <Text style={styles.timelineLabel}>Started</Text>
               <Text style={styles.timelineDate}>
                 {new Date(subscription.startDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
               </Text>
@@ -155,7 +169,7 @@ export default function SubscriptionDetailScreen() {
               <Ionicons name="alarm-outline" size={20} color={theme.colors.primary} />
             </View>
             <View style={styles.timelineDetails}>
-              <Text style={styles.timelineLabel}>Next Renewal / Expiry Date</Text>
+              <Text style={styles.timelineLabel}>Renews on</Text>
               <Text style={styles.timelineDate}>
                 {new Date(subscription.expiryDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
               </Text>
@@ -166,7 +180,7 @@ export default function SubscriptionDetailScreen() {
         {/* Notes Card */}
         {subscription.notes ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Notes & Payment Details</Text>
+            <Text style={styles.sectionTitle}>Notes</Text>
             <Text style={styles.notesText}>{subscription.notes}</Text>
           </View>
         ) : null}
@@ -174,7 +188,7 @@ export default function SubscriptionDetailScreen() {
         {/* Delete Button */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
           <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
-          <Text style={styles.deleteButtonText}>Delete Subscription</Text>
+          <Text style={styles.deleteButtonText}>Delete</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -256,7 +270,7 @@ const styles = StyleSheet.create({
   amountDivider: {
     height: 1,
     backgroundColor: theme.colors.border,
-    my: theme.spacing.md,
+    marginVertical: theme.spacing.md,
   },
   amountRow: {
     flexDirection: 'row',
@@ -325,7 +339,7 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: theme.colors.border,
     marginLeft: 19,
-    my: 4,
+    marginVertical: 4,
   },
   notesText: {
     ...theme.typography.body,

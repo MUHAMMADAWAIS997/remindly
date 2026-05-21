@@ -49,10 +49,10 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Subscription Name *</Text>
+        <Text style={styles.label}>Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Netflix Premium"
+          placeholder="Netflix, Spotify..."
           placeholderTextColor={theme.colors.textMuted}
           value={name}
           onChangeText={setName}
@@ -60,7 +60,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Billing Amount ($) *</Text>
+        <Text style={styles.label}>Amount ($)</Text>
         <TextInput
           style={styles.input}
           placeholder="19.99"
@@ -72,7 +72,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Category *</Text>
+        <Text style={styles.label}>Category</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pills}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
@@ -87,7 +87,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Next Renewal / Expiry Date *</Text>
+        <Text style={styles.label}>Renewal date</Text>
         <TouchableOpacity style={styles.datePicker} onPress={() => setShowDatePicker(true)}>
           <Ionicons name="calendar-outline" size={20} color={theme.colors.textMuted} />
           <Text style={styles.dateText}>
@@ -103,10 +103,10 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Notes (Optional)</Text>
+        <Text style={styles.label}>Notes</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Add payment method or reminder notes..."
+          placeholder="Payment method, card ending in..."
           placeholderTextColor={theme.colors.textMuted}
           multiline
           numberOfLines={3}

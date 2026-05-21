@@ -56,13 +56,12 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Start tracking your subscriptions today</Text>
+            <Text style={styles.title}>Create account</Text>
           </View>
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Full Name</Text>
+              <Text style={styles.label}>Name</Text>
               <TextInput
                 style={styles.input}
                 placeholder="John Doe"
@@ -74,7 +73,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email Address</Text>
+              <Text style={styles.label}>Email</Text>
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"

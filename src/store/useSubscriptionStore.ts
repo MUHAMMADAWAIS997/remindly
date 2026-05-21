@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import Toast from 'react-native-toast-message';
 import { api } from '@/services/api';
+import {
+  scheduleSubscriptionNotifications,
+  cancelSubscriptionNotifications,
+  scheduleAllSubscriptionNotifications,
+} from '@/utils/notifications';
 
 export interface SubscriptionItem {
   _id: string;
@@ -112,6 +117,8 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       });
       await get().fetchSummary();
       await get().fetchSubscriptions();
+      const activeSubs = get().subscriptions.filter((s) => s.statusInfo?.status !== 'Expired');
+      scheduleAllSubscriptionNotifications(activeSubs).catch(() => {});
       set({ isLoading: false });
       return true;
     } catch (error: any) {
@@ -137,6 +144,8 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
       });
       await get().fetchSummary();
       await get().fetchSubscriptions();
+      const updated = get().subscriptions.find((s) => s._id === id);
+      if (updated) scheduleSubscriptionNotifications(updated).catch(() => {});
       set({ isLoading: false });
       return true;
     } catch (error: any) {
@@ -154,6 +163,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   deleteSubscription: async (id) => {
     try {
       await api.delete(`/subscriptions/${id}`);
+      cancelSubscriptionNotifications(id).catch(() => {});
       Toast.show({
         type: 'info',
         text1: 'Deleted',

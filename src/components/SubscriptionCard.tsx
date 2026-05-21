@@ -5,6 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
 import { SubscriptionItem } from '@/store/useSubscriptionStore';
 
+const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
+  Entertainment: 'tv-outline',
+  Education: 'book-outline',
+  Health: 'heart-outline',
+  Utilities: 'flash-outline',
+  Finance: 'wallet-outline',
+  Other: 'apps-outline',
+};
+
 function getStatusBadge(status: SubscriptionItem['statusInfo']['status']) {
   switch (status) {
     case 'Expiring Soon':
@@ -45,7 +54,11 @@ export function SubscriptionCard({ item, dimmed }: Props) {
       onPress={() => router.push(`/subscriptions/${item._id}`)}>
       <View style={styles.left}>
         <View style={styles.badge}>
-          <Text style={[styles.initial, dimmed && styles.initialDimmed]}>{item.category[0]}</Text>
+          <Ionicons
+            name={CATEGORY_ICONS[item.category] ?? 'apps-outline'}
+            size={22}
+            color={dimmed ? theme.colors.textMuted : theme.colors.primary}
+          />
         </View>
         <View style={styles.details}>
           <Text style={styles.title} numberOfLines={1}>{item.name}</Text>
@@ -98,13 +111,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.inputBackground,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  initial: {
-    ...theme.typography.h3,
-    color: theme.colors.primary,
-  },
-  initialDimmed: {
-    color: theme.colors.textMuted,
   },
   details: {
     flex: 1,

@@ -30,13 +30,12 @@ export default function LoginScreen() {
         style={styles.container}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Log in to manage your subscriptions</Text>
+          <Text style={styles.title}>Welcome back</Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={styles.input}
               placeholder="you@example.com"

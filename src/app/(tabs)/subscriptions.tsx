@@ -85,7 +85,7 @@ export default function SubscriptionsScreen() {
           ) : subscriptions.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>No Subscriptions Found</Text>
-              <Text style={styles.emptySubtitle}>Try adjusting your filters or add a new subscription record.</Text>
+              <Text style={styles.emptySubtitle}>Try a different filter.</Text>
             </View>
           ) : (
             subscriptions.map((item) => <SubscriptionCard key={item._id} item={item} />)
