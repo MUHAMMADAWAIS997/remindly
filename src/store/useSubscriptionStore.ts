@@ -14,6 +14,7 @@ export interface SubscriptionItem {
   startDate: string;
   expiryDate: string;
   amount: number;
+  billingCycle?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   notes?: string;
   statusInfo: {
     status: 'Active' | 'Expiring Soon' | 'Expired';

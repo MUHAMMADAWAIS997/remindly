@@ -4,10 +4,13 @@ import { storage } from '@/utils/storage';
 
 const getBaseUrl = () => {
   if (Platform.OS === 'web') {
-    return 'https://remindly-backend-xyre.onrender.com/api';
+    return 'http://localhost:5000/api';
   }
 
-  return 'https://remindly-backend-xyre.onrender.com/api';
+  // Android emulator uses 10.0.2.2 to reach host machine localhost.
+  // For a physical device on the same WiFi, replace with your PC's local IP (e.g. 192.168.x.x).
+  // Switch back to the Render URL when deploying the updated backend.
+  return 'http://10.0.2.2:5000/api';
 };
 
 export const api = axios.create({

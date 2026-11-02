@@ -6,11 +6,18 @@ import { SubscriptionItem } from '@/store/useSubscriptionStore';
 import { DatePickerModal } from '@/components/DatePickerModal';
 
 const CATEGORIES: SubscriptionItem['category'][] = ['Entertainment', 'Education', 'Health', 'Utilities', 'Finance', 'Other'];
+const BILLING_CYCLES: { label: string; value: NonNullable<SubscriptionItem['billingCycle']> }[] = [
+  { label: 'Monthly', value: 'monthly' },
+  { label: 'Yearly', value: 'yearly' },
+  { label: 'Weekly', value: 'weekly' },
+  { label: 'Daily', value: 'daily' },
+];
 
 export interface SubscriptionFormValues {
   name: string;
   category: SubscriptionItem['category'];
   amount: number;
+  billingCycle?: NonNullable<SubscriptionItem['billingCycle']>;
   expiryDate: string;
   notes: string;
 }
@@ -21,6 +28,7 @@ interface Props {
     name?: string;
     category?: SubscriptionItem['category'];
     amount?: string;
+    billingCycle?: NonNullable<SubscriptionItem['billingCycle']>;
     expiryDate?: Date;
     notes?: string;
   };
@@ -31,6 +39,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
   const [name, setName] = useState(defaultValues?.name ?? '');
   const [category, setCategory] = useState<SubscriptionItem['category']>(defaultValues?.category ?? 'Entertainment');
   const [amount, setAmount] = useState(defaultValues?.amount ?? '');
+  const [billingCycle, setBillingCycle] = useState<NonNullable<SubscriptionItem['billingCycle']>>(defaultValues?.billingCycle ?? 'monthly');
   const [expiryDate, setExpiryDate] = useState(defaultValues?.expiryDate ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
   const [notes, setNotes] = useState(defaultValues?.notes ?? '');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -42,7 +51,14 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
     if (isNaN(numAmount) || numAmount < 0) return;
 
     setLoading(true);
-    await onValidSubmit({ name: name.trim(), category, amount: numAmount, expiryDate: expiryDate.toISOString(), notes: notes.trim() });
+    await onValidSubmit({
+      name: name.trim(),
+      category,
+      amount: numAmount,
+      billingCycle,
+      expiryDate: expiryDate.toISOString(),
+      notes: notes.trim(),
+    });
     setLoading(false);
   };
 
@@ -69,6 +85,23 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
           value={amount}
           onChangeText={setAmount}
         />
+      </View>
+
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Billing Cycle</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pills}>
+          {BILLING_CYCLES.map((cycle) => (
+            <TouchableOpacity
+              key={cycle.value}
+              style={[styles.pill, billingCycle === cycle.value && styles.pillActive]}
+              onPress={() => setBillingCycle(cycle.value)}
+            >
+              <Text style={[styles.pillText, billingCycle === cycle.value && styles.pillTextActive]}>
+                {cycle.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <View style={styles.inputGroup}>

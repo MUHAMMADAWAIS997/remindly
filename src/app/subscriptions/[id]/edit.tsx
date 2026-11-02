@@ -63,6 +63,7 @@ export default function EditSubscriptionScreen() {
             name: subscription.name,
             category: subscription.category,
             amount: subscription.amount.toString(),
+            billingCycle: subscription.billingCycle || 'monthly',
             expiryDate: new Date(subscription.expiryDate),
             notes: subscription.notes,
           } : undefined}

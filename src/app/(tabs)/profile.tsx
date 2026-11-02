@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useAuthStore } from '@/store/useAuthStore';
 import { theme } from '@/utils/theme';
 
@@ -9,17 +10,46 @@ export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
+    const doLogout = async () => {
+      await logout();
+      router.replace('/login');
+    };
+
     if (Platform.OS === 'web') {
       const confirm = window.confirm("You'll need to sign in again. Are you sure you want to log out?");
       if (confirm) {
-        logout();
+        doLogout();
       }
     } else {
       Alert.alert('Log out', "You'll need to sign in again.", [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Log Out', style: 'destructive', onPress: logout },
+        { text: 'Log Out', style: 'destructive', onPress: doLogout },
       ]);
     }
+  };
+
+  const handleNotificationsPress = () => {
+    Alert.alert(
+      'Notification Settings',
+      'Remindly schedules automated renewal reminders 7 days, 3 days, 1 day before expiration, and on renewal day.\n\nMake sure notification permissions are enabled in your device settings.',
+      [{ text: 'Got it', style: 'default' }]
+    );
+  };
+
+  const handlePrivacyPress = () => {
+    Alert.alert(
+      'Privacy & Security',
+      'Your subscription data and credentials are encrypted in transit and securely stored. We never sell or share your personal data with third parties.',
+      [{ text: 'OK', style: 'default' }]
+    );
+  };
+
+  const handleHelpPress = () => {
+    Alert.alert(
+      'Help & Support',
+      'Need assistance with your subscriptions?\n\n• Email: support@remindly.app\n• Version: Remindly 1.0.0 (Production Build)',
+      [{ text: 'Close', style: 'default' }]
+    );
   };
 
   return (
@@ -28,15 +58,20 @@ export default function ProfileScreen() {
         {/* Avatar Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.name ? user.name[0].toUpperCase() : 'U'}</Text>
+            <Text style={styles.avatarText}>{user?.firstName ? user.firstName[0].toUpperCase() : 'U'}</Text>
           </View>
           <Text style={styles.name}>{user?.name || 'User Profile'}</Text>
           <Text style={styles.email}>{user?.email || 'you@example.com'}</Text>
+          {user?.gender ? (
+            <View style={styles.genderBadge}>
+              <Text style={styles.genderText}>{user.gender}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Menu Options */}
         <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleNotificationsPress}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
               <Text style={styles.menuItemText}>Notifications</Text>
@@ -44,7 +79,7 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handlePrivacyPress}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.text} />
               <Text style={styles.menuItemText}>Privacy</Text>
@@ -52,7 +87,7 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={handleHelpPress}>
             <View style={styles.menuItemLeft}>
               <Ionicons name="help-circle-outline" size={22} color={theme.colors.text} />
               <Text style={styles.menuItemText}>Help</Text>
@@ -109,6 +144,18 @@ const styles = StyleSheet.create({
   email: {
     ...theme.typography.bodySm,
     color: theme.colors.textMuted,
+  },
+  genderBadge: {
+    marginTop: theme.spacing.sm,
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+  },
+  genderText: {
+    ...theme.typography.caption,
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
   menuContainer: {
     backgroundColor: theme.colors.card,

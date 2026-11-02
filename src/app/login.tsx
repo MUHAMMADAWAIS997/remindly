@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { theme } from '@/utils/theme';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -20,7 +20,10 @@ export default function LoginScreen() {
       });
       return;
     }
-    await login(email.trim(), password);
+    const success = await login(email.trim(), password);
+    if (success) {
+      router.replace('/(tabs)/home');
+    }
   };
 
   return (

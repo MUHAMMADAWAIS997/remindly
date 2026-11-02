@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import Toast from 'react-native-toast-message';
 import { api } from '@/services/api';
-import { router } from 'expo-router';
 import { storage } from '@/utils/storage';
 
 interface User {
   id: string;
+  firstName: string;
+  lastName: string;
   name: string;
+  gender: 'Male' | 'Female';
   email: string;
 }
 
@@ -16,7 +18,13 @@ interface AuthState {
   isLoading: boolean;
   isInitialized: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (
+    firstName: string,
+    lastName: string,
+    gender: 'Male' | 'Female',
+    email: string,
+    password: string,
+  ) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
@@ -34,15 +42,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { token, user } = response.data;
 
       await storage.setItem('auth_token', token);
-      set({ token, user, isLoading: false });
+      set({
+        token,
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          name: user.name,
+          gender: user.gender,
+          email: user.email,
+        },
+        isLoading: false,
+      });
 
       Toast.show({
         type: 'success',
         text1: 'Welcome Back!',
-        text2: `Successfully logged in as ${user.name}`,
+        text2: `Successfully logged in as ${user.firstName}`,
       });
 
-      router.replace('/(tabs)/home');
       return true;
     } catch (error: any) {
       const message = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please check credentials.';
@@ -56,22 +74,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  register: async (name, email, password) => {
+  register: async (firstName, lastName, gender, email, password) => {
     set({ isLoading: true });
     try {
-      const response = await api.post('/auth/register', { name, email, password });
+      const response = await api.post('/auth/register', { firstName, lastName, gender, email, password });
       const { token, user } = response.data;
 
       await storage.setItem('auth_token', token);
-      set({ token, user, isLoading: false });
+      set({
+        token,
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          name: user.name,
+          gender: user.gender,
+          email: user.email,
+        },
+        isLoading: false,
+      });
 
       Toast.show({
         type: 'success',
         text1: 'Account Created!',
-        text2: `Welcome to Remindly, ${user.name}!`,
+        text2: `Welcome to Remindly, ${user.firstName}!`,
       });
 
-      router.replace('/(tabs)/home');
       return true;
     } catch (error: any) {
       const message = error.response?.data?.error || error.response?.data?.message || 'Registration failed.';
@@ -89,7 +117,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await api.post('/auth/logout');
     } catch (err) {
-      
+      // Ignored for graceful local logout
     }
     await storage.removeItem('auth_token');
     set({ token: null, user: null });
@@ -98,7 +126,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       text1: 'Logged out',
       text2: 'You have been safely logged out.',
     });
-    router.replace('/login');
   },
 
   checkAuth: async () => {
@@ -112,7 +139,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ token });
       const response = await api.get('/auth/me');
       if (response.data?.success) {
-        set({ user: { id: response.data.data._id, name: response.data.data.name, email: response.data.data.email } });
+        set({
+          user: {
+            id: response.data.data._id,
+            firstName: response.data.data.firstName,
+            lastName: response.data.data.lastName,
+            name: response.data.data.name,
+            gender: response.data.data.gender,
+            email: response.data.data.email,
+          },
+        });
       }
     } catch (error) {
       await storage.removeItem('auth_token');

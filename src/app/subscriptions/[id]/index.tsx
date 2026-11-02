@@ -133,7 +133,9 @@ export default function SubscriptionDetailScreen() {
 
           <View style={styles.amountRow}>
             <Text style={styles.amountLabel}>Amount</Text>
-            <Text style={styles.amountValue}>${subscription.amount.toFixed(2)}</Text>
+            <Text style={styles.amountValue}>
+              ${subscription.amount.toFixed(2)}{subscription.billingCycle ? ` / ${subscription.billingCycle}` : ''}
+            </Text>
           </View>
 
           <View style={styles.statusRow}>
