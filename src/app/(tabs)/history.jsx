@@ -115,3 +115,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
   },
 });
+
