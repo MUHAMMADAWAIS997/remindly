@@ -1,1 +1,8 @@
 https://expo.dev/artifacts/eas/f6c6Qh7W149mYVe9RRJaYv.apk
+Phase 1: Core Utilities & Theme (Non-breaking base layer)
+Phase 2: React Context State Providers (Core architecture foundation)
+Phase 3: Shared Components & Built-in Animated Banner (UI layer)
+Phase 4: Entry & Auth Screens (index, login, register)
+Phase 5: Tabs & Root Layout (_layout, home, subscriptions, history, profile)
+Phase 6: Detail & Edit Screens (add, [id]/index, [id]/edit)
+Phase 7: Final Verification & Clean-up

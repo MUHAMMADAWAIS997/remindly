@@ -1,3 +1,7 @@
+// Global design tokens for Remindly
+// Note: This file will be deprecated and deleted in future phases once all screen imports are accounted for.
+// The plain JavaScript definition is available in theme.js.
+
 export const theme = {
   colors: {
     primary: '#6366F1',
