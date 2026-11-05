@@ -1,17 +1,34 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { useSubscriptions, SubscriptionItem } from '@/context/SubscriptionContext';
+import { useSubscriptions } from '@/context/SubscriptionContext';
 
+// SubscriptionDetailScreen shows full information about a single subscription.
+// The subscription ID comes from the URL: /subscriptions/[id]
 export default function SubscriptionDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // `id` is extracted from the dynamic route segment [id]
+  const { id } = useLocalSearchParams();
+
   const { fetchSubscriptionById, deleteSubscription } = useSubscriptions();
-  const [subscription, setSubscription] = useState<SubscriptionItem | null>(null);
+
+  // `subscription` holds the loaded subscription data, or null if not found/loaded yet
+  const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // useFocusEffect re-runs the load every time this screen comes into focus.
+  // This ensures fresh data is shown if the user edits and comes back.
   useFocusEffect(
     useCallback(() => {
       const loadDetail = async () => {
@@ -26,18 +43,24 @@ export default function SubscriptionDetailScreen() {
     }, [id, fetchSubscriptionById])
   );
 
+  // handleDelete shows a confirmation dialog before permanently removing the subscription.
+  // Uses window.confirm on web and Alert.alert on native.
   const handleDelete = () => {
+    const doDelete = async () => {
+      if (id) {
+        const success = await deleteSubscription(id);
+        if (success) {
+          router.back();
+        }
+      }
+    };
+
     if (Platform.OS === 'web') {
-      const confirm = window.confirm(`Are you sure you want to permanently remove "${subscription?.name}"?`);
-      if (confirm) {
-        (async () => {
-          if (id) {
-            const success = await deleteSubscription(id);
-            if (success) {
-              router.back();
-            }
-          }
-        })();
+      const confirmed = window.confirm(
+        `Are you sure you want to permanently remove "${subscription?.name}"?`
+      );
+      if (confirmed) {
+        doDelete();
       }
     } else {
       Alert.alert(
@@ -45,34 +68,39 @@ export default function SubscriptionDetailScreen() {
         `Are you sure you want to permanently remove "${subscription?.name}"?`,
         [
           { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: async () => {
-              if (id) {
-                const success = await deleteSubscription(id);
-                if (success) {
-                  router.back();
-                }
-              }
-            },
-          },
+          { text: 'Delete', style: 'destructive', onPress: doDelete },
         ]
       );
     }
   };
 
-  const getStatusBadge = (status?: SubscriptionItem['statusInfo']['status']) => {
+  // getStatusBadge returns colors and an icon based on the subscription's status string.
+  // This drives the colored status tag shown on the detail card.
+  const getStatusBadge = (status) => {
     switch (status) {
       case 'Expiring Soon':
-        return { bg: theme.colors.warningBg, text: theme.colors.warning, icon: <Ionicons name="time-outline" size={16} color={theme.colors.warning} /> };
+        return {
+          bg: theme.colors.warningBg,
+          text: theme.colors.warning,
+          icon: <Ionicons name="time-outline" size={16} color={theme.colors.warning} />,
+        };
       case 'Expired':
-        return { bg: theme.colors.errorBg, text: theme.colors.error, icon: <Ionicons name="alert-circle-outline" size={16} color={theme.colors.error} /> };
+        return {
+          bg: theme.colors.errorBg,
+          text: theme.colors.error,
+          icon: <Ionicons name="alert-circle-outline" size={16} color={theme.colors.error} />,
+        };
       default:
-        return { bg: theme.colors.successBg, text: theme.colors.success, icon: <Ionicons name="checkmark-circle-outline" size={16} color={theme.colors.success} /> };
+        // Active subscriptions get a green badge
+        return {
+          bg: theme.colors.successBg,
+          text: theme.colors.success,
+          icon: <Ionicons name="checkmark-circle-outline" size={16} color={theme.colors.success} />,
+        };
     }
   };
 
+  // Show a full-screen loading spinner while the subscription data is being fetched
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -83,6 +111,7 @@ export default function SubscriptionDetailScreen() {
     );
   }
 
+  // Show a "Not Found" state if the subscription wasn't returned from the API
   if (!subscription) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -101,25 +130,33 @@ export default function SubscriptionDetailScreen() {
     );
   }
 
+  // Compute the status badge and days remaining for the detail view
   const badge = getStatusBadge(subscription.statusInfo?.status);
   const daysLeft = subscription.statusInfo?.daysLeft ?? 0;
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Header: back button, title, edit button */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Details</Text>
-        <TouchableOpacity onPress={() => router.push(`/subscriptions/${id}/edit`)} style={styles.editButton}>
+        {/* Pencil icon navigates to the Edit screen for this subscription */}
+        <TouchableOpacity
+          onPress={() => router.push(`/subscriptions/${id}/edit`)}
+          style={styles.editButton}
+        >
           <Ionicons name="pencil-outline" size={22} color={theme.colors.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Main Info Card */}
+
+        {/* Main Info Card: name, category, amount, status */}
         <View style={styles.card}>
           <View style={styles.cardTop}>
+            {/* Category badge shows the first letter of the category name */}
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryInitial}>{subscription.category[0]}</Text>
             </View>
@@ -131,27 +168,33 @@ export default function SubscriptionDetailScreen() {
 
           <View style={styles.amountDivider} />
 
+          {/* Amount row */}
           <View style={styles.amountRow}>
             <Text style={styles.amountLabel}>Amount</Text>
             <Text style={styles.amountValue}>
-              ${subscription.amount.toFixed(2)}{subscription.billingCycle ? ` / ${subscription.billingCycle}` : ''}
+              ${subscription.amount.toFixed(2)}
+              {subscription.billingCycle ? ` / ${subscription.billingCycle}` : ''}
             </Text>
           </View>
 
+          {/* Status row — shows days remaining or status label */}
           <View style={styles.statusRow}>
             <Text style={styles.amountLabel}>Status</Text>
             <View style={[styles.statusTag, { backgroundColor: badge.bg }]}>
               {badge.icon}
               <Text style={[styles.statusText, { color: badge.text }]}>
-                {daysLeft <= 7 && daysLeft >= 0 ? `${daysLeft} days remaining` : subscription.statusInfo?.status || 'Active'}
+                {daysLeft <= 7 && daysLeft >= 0
+                  ? `${daysLeft} days remaining`
+                  : subscription.statusInfo?.status || 'Active'}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Dates Card */}
+        {/* Timeline Card: start date and renewal date */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Timeline</Text>
+
           <View style={styles.timelineRow}>
             <View style={styles.timelineIcon}>
               <Ionicons name="calendar-outline" size={20} color={theme.colors.primary} />
@@ -159,11 +202,16 @@ export default function SubscriptionDetailScreen() {
             <View style={styles.timelineDetails}>
               <Text style={styles.timelineLabel}>Started</Text>
               <Text style={styles.timelineDate}>
-                {new Date(subscription.startDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                {new Date(subscription.startDate).toLocaleDateString(undefined, {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </Text>
             </View>
           </View>
 
+          {/* Vertical connector line between the two timeline rows */}
           <View style={styles.timelineConnector} />
 
           <View style={styles.timelineRow}>
@@ -173,13 +221,17 @@ export default function SubscriptionDetailScreen() {
             <View style={styles.timelineDetails}>
               <Text style={styles.timelineLabel}>Renews on</Text>
               <Text style={styles.timelineDate}>
-                {new Date(subscription.expiryDate).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                {new Date(subscription.expiryDate).toLocaleDateString(undefined, {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Notes Card */}
+        {/* Notes Card — only shown if the subscription has notes */}
         {subscription.notes ? (
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Notes</Text>
@@ -187,7 +239,7 @@ export default function SubscriptionDetailScreen() {
           </View>
         ) : null}
 
-        {/* Delete Button */}
+        {/* Delete Button — triggers confirmation before deleting */}
         <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
           <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
           <Text style={styles.deleteButtonText}>Delete</Text>
