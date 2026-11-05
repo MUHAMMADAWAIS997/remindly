@@ -1,5 +1,13 @@
 import React, { useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable, RefreshControl } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Pressable,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,18 +16,24 @@ import { useSubscriptions } from '@/context/SubscriptionContext';
 import { useAuth } from '@/context/AuthContext';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 
+// HomeScreen is the Dashboard tab.
+// It shows the user's monthly spend, three stat boxes, and a list of upcoming renewals.
 export default function HomeScreen() {
   const { summary, isSummaryLoading, fetchSummary } = useSubscriptions();
   const { user } = useAuth();
 
+  // loadDashboard fetches the summary data from the API.
+  // useCallback prevents this function from being recreated on every render.
   const loadDashboard = useCallback(() => {
     fetchSummary();
   }, [fetchSummary]);
 
+  // Fetch dashboard data when the screen first loads.
   useEffect(() => {
     loadDashboard();
   }, [loadDashboard]);
 
+  // Pull values out of the summary object with safe fallbacks.
   const totalMonthly = summary?.totalMonthlyOutflow || 0;
   const activeCount = summary?.totalActive || 0;
   const upcomingCount = summary?.upcomingRenewals || 0;
@@ -31,16 +45,17 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
+        // Pull-to-refresh re-fetches the dashboard summary
         refreshControl={
           <RefreshControl refreshing={isSummaryLoading} onRefresh={loadDashboard} tintColor={theme.colors.primary} />
         }
       >
-        {/* Welcome Header */}
+        {/* Welcome Header — greets the user by their first name */}
         <View style={styles.welcomeHeader}>
           <Text style={styles.greeting}>Hi, {user?.name ? user.name.split(' ')[0] : 'there'}</Text>
         </View>
 
-        {/* Summary Card */}
+        {/* Summary Card — displays total monthly spend */}
         <View style={styles.summaryCard}>
           <Text style={styles.summaryLabel}>Monthly spend</Text>
           <Text style={styles.summaryAmount}>${totalMonthly.toFixed(2)}</Text>
@@ -49,7 +64,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Dashboard Stat Boxes */}
+        {/* Stat Boxes — tapping each navigates to Subscriptions filtered by that status */}
         <View style={styles.statsRow}>
           <Pressable
             style={[styles.statBox, { borderTopColor: theme.colors.primary }]}
@@ -58,6 +73,7 @@ export default function HomeScreen() {
             <Text style={styles.statNumber}>{activeCount}</Text>
             <Text style={styles.statLabel}>Active</Text>
           </Pressable>
+
           <Pressable
             style={[styles.statBox, { borderTopColor: theme.colors.warning }]}
             onPress={() => router.push('/(tabs)/subscriptions?filter=upcoming')}
@@ -65,6 +81,7 @@ export default function HomeScreen() {
             <Text style={styles.statNumber}>{upcomingCount}</Text>
             <Text style={styles.statLabel}>Expiring Soon</Text>
           </Pressable>
+
           <Pressable
             style={[styles.statBox, { borderTopColor: theme.colors.error }]}
             onPress={() => router.push('/(tabs)/subscriptions?filter=expired')}
@@ -74,7 +91,7 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Section Header */}
+        {/* Section Header — title + View All link */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Upcoming Renewals</Text>
           <TouchableOpacity onPress={() => router.push('/(tabs)/subscriptions')}>
@@ -82,18 +99,23 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Subscriptions List */}
+        {/* Upcoming Renewals List */}
         <View style={styles.listContainer}>
           {upcomingList.length === 0 ? (
+            // Empty state shown when there are no upcoming renewals
             <View style={styles.emptyState}>
               <Ionicons name="folder-open-outline" size={48} color={theme.colors.textMuted} />
               <Text style={styles.emptyStateTitle}>No upcoming renewals</Text>
               <Text style={styles.emptyStateSubtitle}>Tap + to add your first subscription.</Text>
-              <TouchableOpacity style={styles.emptyAddButton} onPress={() => router.push('/subscriptions/add')}>
+              <TouchableOpacity
+                style={styles.emptyAddButton}
+                onPress={() => router.push('/subscriptions/add')}
+              >
                 <Text style={styles.emptyAddButtonText}>Add Subscription</Text>
               </TouchableOpacity>
             </View>
           ) : (
+            // Render a card for each upcoming subscription
             upcomingList.map((item) => <SubscriptionCard key={item._id} item={item} />)
           )}
         </View>
@@ -117,10 +139,6 @@ const styles = StyleSheet.create({
   greeting: {
     ...theme.typography.h2,
     color: theme.colors.text,
-  },
-  subGreeting: {
-    ...theme.typography.bodySm,
-    color: theme.colors.textMuted,
   },
   summaryCard: {
     backgroundColor: theme.colors.primary,

@@ -6,9 +6,13 @@ import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { theme } from '@/utils/theme';
 
+// ProfileScreen shows the user's avatar, name, email, gender badge,
+// and a settings menu with Notifications, Privacy, and Help options.
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
 
+  // handleLogout confirms with the user before signing them out.
+  // Uses window.confirm on web and Alert.alert on native.
   const handleLogout = () => {
     const doLogout = async () => {
       await logout();
@@ -16,8 +20,8 @@ export default function ProfileScreen() {
     };
 
     if (Platform.OS === 'web') {
-      const confirm = window.confirm("You'll need to sign in again. Are you sure you want to log out?");
-      if (confirm) {
+      const confirmed = window.confirm("You'll need to sign in again. Are you sure you want to log out?");
+      if (confirmed) {
         doLogout();
       }
     } else {
@@ -28,6 +32,7 @@ export default function ProfileScreen() {
     }
   };
 
+  // Show a dialog explaining how notifications work in Remindly.
   const handleNotificationsPress = () => {
     Alert.alert(
       'Notification Settings',
@@ -36,6 +41,7 @@ export default function ProfileScreen() {
     );
   };
 
+  // Show a dialog with privacy and data security information.
   const handlePrivacyPress = () => {
     Alert.alert(
       'Privacy & Security',
@@ -44,10 +50,11 @@ export default function ProfileScreen() {
     );
   };
 
+  // Show a dialog with support contact and version information.
   const handleHelpPress = () => {
     Alert.alert(
       'Help & Support',
-      'Need assistance with your subscriptions?\n\n• Email: support@remindly.app\n• Version: Remindly 1.0.0 (Production Build)',
+      'Need assistance with your subscriptions?\n\n📧 Email: support@remindly.app\n📱 Version: Remindly 1.0.0 (Production Build)',
       [{ text: 'Close', style: 'default' }]
     );
   };
@@ -55,13 +62,18 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Avatar Card */}
+
+        {/* Avatar Card — displays user's initial, full name, email, and gender badge */}
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.firstName ? user.firstName[0].toUpperCase() : 'U'}</Text>
+            {/* Show the first letter of the user's first name as the avatar */}
+            <Text style={styles.avatarText}>
+              {user?.firstName ? user.firstName[0].toUpperCase() : 'U'}
+            </Text>
           </View>
           <Text style={styles.name}>{user?.name || 'User Profile'}</Text>
           <Text style={styles.email}>{user?.email || 'you@example.com'}</Text>
+          {/* Only show the gender badge if gender data is available */}
           {user?.gender ? (
             <View style={styles.genderBadge}>
               <Text style={styles.genderText}>{user.gender}</Text>
@@ -96,7 +108,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Logout Button */}
+        {/* Log Out Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={22} color={theme.colors.error} />
           <Text style={styles.logoutText}>Log Out</Text>

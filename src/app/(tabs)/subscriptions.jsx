@@ -1,12 +1,23 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable, RefreshControl, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { theme } from '@/utils/theme';
 import { useSubscriptions } from '@/context/SubscriptionContext';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 
+// Available category options for filtering subscriptions
 const CATEGORIES = ['All', 'Entertainment', 'Education', 'Health', 'Utilities', 'Finance', 'Other'];
+
+// Status filter tab options — value must match the API's filter parameter
 const STATUS_FILTERS = [
   { label: 'All', value: '' },
   { label: 'Active', value: 'active' },
@@ -14,23 +25,31 @@ const STATUS_FILTERS = [
   { label: 'Expired', value: 'expired' },
 ];
 
+// SubscriptionsScreen shows all user subscriptions with status and category filters.
+// It reads an optional `filter` URL parameter (e.g. from tapping a stat box on the Dashboard).
 export default function SubscriptionsScreen() {
-  const { filter } = useLocalSearchParams<{ filter?: string }>();
+  // Read the `filter` query param from the URL (e.g. '?filter=active')
+  const { filter } = useLocalSearchParams();
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState(filter || '');
 
   const { subscriptions, isLoading, fetchSubscriptions } = useSubscriptions();
 
+  // loadData fetches subscriptions matching the current status and category filters.
   const loadData = useCallback(() => {
     fetchSubscriptions(selectedStatus, selectedCategory);
   }, [fetchSubscriptions, selectedStatus, selectedCategory]);
 
+  // Sync the status filter when the URL `filter` param changes
+  // (e.g. navigating here from the Dashboard stat boxes).
   useEffect(() => {
     if (filter) {
       setSelectedStatus(filter);
     }
   }, [filter]);
 
+  // Re-fetch subscriptions whenever the status or category filter changes.
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -38,7 +57,8 @@ export default function SubscriptionsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Status Filter Tabs */}
+
+        {/* Status Filter Tabs — All / Active / Upcoming / Expired */}
         <View style={styles.statusTabsContainer}>
           {STATUS_FILTERS.map((tab) => (
             <TouchableOpacity
@@ -53,9 +73,13 @@ export default function SubscriptionsScreen() {
           ))}
         </View>
 
-        {/* Categories Horizontal Filter */}
+        {/* Category Pills — horizontal scrollable filter row */}
         <View style={styles.categoriesWrapper}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesContainer}
+          >
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
                 key={cat}
@@ -70,7 +94,7 @@ export default function SubscriptionsScreen() {
           </ScrollView>
         </View>
 
-        {/* Subscriptions List */}
+        {/* Subscriptions List — pull-to-refresh supported */}
         <ScrollView
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
@@ -79,15 +103,18 @@ export default function SubscriptionsScreen() {
           }
         >
           {isLoading && subscriptions.length === 0 ? (
+            // Show a spinner on initial load
             <View style={styles.centerLoading}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
           ) : subscriptions.length === 0 ? (
+            // Empty state when no subscriptions match the filters
             <View style={styles.emptyState}>
               <Text style={styles.emptyTitle}>No Subscriptions Found</Text>
               <Text style={styles.emptySubtitle}>Try a different filter.</Text>
             </View>
           ) : (
+            // Render a card for each subscription
             subscriptions.map((item) => <SubscriptionCard key={item._id} item={item} />)
           )}
         </ScrollView>
