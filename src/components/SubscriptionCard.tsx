@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { SubscriptionItem } from '@/store/useSubscriptionStore';
+import { SubscriptionItem } from '@/context/SubscriptionContext';
 
 const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
   Entertainment: 'tv-outline',

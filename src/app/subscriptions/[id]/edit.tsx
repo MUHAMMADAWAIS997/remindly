@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { theme } from '@/utils/theme';
-import { useSubscriptionStore, SubscriptionItem } from '@/store/useSubscriptionStore';
+import { useSubscriptions, SubscriptionItem } from '@/context/SubscriptionContext';
 import { SubscriptionForm, SubscriptionFormValues } from '@/components/SubscriptionForm';
 
 export default function EditSubscriptionScreen() {
@@ -13,7 +13,7 @@ export default function EditSubscriptionScreen() {
   const [subscription, setSubscription] = useState<SubscriptionItem | null>(null);
   const [fetching, setFetching] = useState(true);
 
-  const { fetchSubscriptionById, updateSubscription } = useSubscriptionStore();
+  const { fetchSubscriptionById, updateSubscription } = useSubscriptions();
 
   useEffect(() => {
     const loadDetail = async () => {

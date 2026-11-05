@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/context/AuthContext';
 import { theme } from '@/utils/theme';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     const doLogout = async () => {

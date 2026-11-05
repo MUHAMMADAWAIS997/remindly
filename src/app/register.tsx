@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/context/AuthContext';
 
 // ── Validation helpers ────────────────────────────────────────────────────────
 const LETTERS_ONLY = /^[A-Za-z]+$/;
@@ -273,7 +273,7 @@ interface TouchedState {
 }
 
 export default function RegisterScreen() {
-  const { register, isLoading } = useAuthStore();
+  const { register, isLoading } = useAuth();
 
   const [form, setForm] = useState<FormState>({
     firstName: '',

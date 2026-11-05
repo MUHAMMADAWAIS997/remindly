@@ -4,12 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { theme } from '@/utils/theme';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading } = useAuth();
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {

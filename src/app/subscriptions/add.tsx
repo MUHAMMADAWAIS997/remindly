@@ -5,11 +5,11 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
 import { theme } from '@/utils/theme';
-import { useSubscriptionStore } from '@/store/useSubscriptionStore';
+import { useSubscriptions } from '@/context/SubscriptionContext';
 import { SubscriptionForm, SubscriptionFormValues } from '@/components/SubscriptionForm';
 
 export default function AddSubscriptionScreen() {
-  const { addSubscription } = useSubscriptionStore();
+  const { addSubscription } = useSubscriptions();
 
   const handleSubmit = async (values: SubscriptionFormValues) => {
     const success = await addSubscription(values);

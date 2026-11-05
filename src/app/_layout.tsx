@@ -5,7 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
 import { theme } from '@/utils/theme';
-import { useAuthStore } from '@/store/useAuthStore';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { SubscriptionProvider, SubscriptionItem } from '@/context/SubscriptionContext';
 import { api } from '@/services/api';
 import {
   requestNotificationPermissions,
@@ -14,7 +15,6 @@ import {
   needsDailyReschedule,
 } from '@/utils/notifications';
 import { InAppNotification } from '@/components/InAppNotification';
-import { SubscriptionItem } from '@/store/useSubscriptionStore';
 
 // Suppress system notification popup when app is in foreground — we show our own banner
 // Wrapped in try/catch because expo-notifications throws in Expo Go on Android SDK 53+
@@ -36,8 +36,8 @@ interface BannerData {
   subscriptionId?: string;
 }
 
-export default function RootLayout() {
-  const { checkAuth, isInitialized, user } = useAuthStore();
+function RootLayoutContent() {
+  const { checkAuth, isInitialized, user } = useAuth();
   const [banner, setBanner] = useState<BannerData | null>(null);
 
   // Initial setup: permissions + channel + notification listeners
@@ -105,30 +105,40 @@ export default function RootLayout() {
   }, [isInitialized, user]);
 
   return (
+    <ThemeProvider value={{
+      ...DefaultTheme,
+      colors: {
+        ...DefaultTheme.colors,
+        background: theme.colors.background,
+        primary: theme.colors.primary,
+        card: theme.colors.card,
+        text: theme.colors.text,
+        border: theme.colors.border,
+      }
+    }}>
+      <Stack screenOptions={{ headerShown: false }} />
+      <Toast />
+      {banner && (
+        <InAppNotification
+          key={`${banner.title}${banner.body}`}
+          title={banner.title}
+          body={banner.body}
+          subscriptionId={banner.subscriptionId}
+          onDismiss={() => setBanner(null)}
+        />
+      )}
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <SafeAreaProvider>
-      <ThemeProvider value={{
-        ...DefaultTheme,
-        colors: {
-          ...DefaultTheme.colors,
-          background: theme.colors.background,
-          primary: theme.colors.primary,
-          card: theme.colors.card,
-          text: theme.colors.text,
-          border: theme.colors.border,
-        }
-      }}>
-        <Stack screenOptions={{ headerShown: false }} />
-        <Toast />
-        {banner && (
-          <InAppNotification
-            key={`${banner.title}${banner.body}`}
-            title={banner.title}
-            body={banner.body}
-            subscriptionId={banner.subscriptionId}
-            onDismiss={() => setBanner(null)}
-          />
-        )}
-      </ThemeProvider>
+      <AuthProvider>
+        <SubscriptionProvider>
+          <RootLayoutContent />
+        </SubscriptionProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { useSubscriptionStore, SubscriptionItem } from '@/store/useSubscriptionStore';
+import { useSubscriptions, SubscriptionItem } from '@/context/SubscriptionContext';
 
 export default function SubscriptionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { fetchSubscriptionById, deleteSubscription } = useSubscriptionStore();
+  const { fetchSubscriptionById, deleteSubscription } = useSubscriptions();
   const [subscription, setSubscription] = useState<SubscriptionItem | null>(null);
   const [loading, setLoading] = useState(true);
 

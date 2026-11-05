@@ -4,13 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { useSubscriptionStore } from '@/store/useSubscriptionStore';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useSubscriptions } from '@/context/SubscriptionContext';
+import { useAuth } from '@/context/AuthContext';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 
 export default function HomeScreen() {
-  const { summary, isSummaryLoading, fetchSummary } = useSubscriptionStore();
-  const { user } = useAuthStore();
+  const { summary, isSummaryLoading, fetchSummary } = useSubscriptions();
+  const { user } = useAuth();
 
   const loadDashboard = useCallback(() => {
     fetchSummary();

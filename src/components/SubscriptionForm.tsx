@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { SubscriptionItem } from '@/store/useSubscriptionStore';
+import { SubscriptionItem } from '@/context/SubscriptionContext';
 import { DatePickerModal } from '@/components/DatePickerModal';
 
 const CATEGORIES: SubscriptionItem['category'][] = ['Entertainment', 'Education', 'Health', 'Utilities', 'Finance', 'Other'];

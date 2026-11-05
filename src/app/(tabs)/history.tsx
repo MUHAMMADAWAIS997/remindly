@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl, ActivityIndicator }
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { useSubscriptionStore } from '@/store/useSubscriptionStore';
+import { useSubscriptions } from '@/context/SubscriptionContext';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 
 export default function HistoryScreen() {
-  const { subscriptions, isLoading, fetchSubscriptions } = useSubscriptionStore();
+  const { subscriptions, isLoading, fetchSubscriptions } = useSubscriptions();
 
   const loadHistory = useCallback(() => {
     fetchSubscriptions('expired', 'All');

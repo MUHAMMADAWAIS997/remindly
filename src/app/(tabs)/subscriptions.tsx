@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable, Refres
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { theme } from '@/utils/theme';
-import { useSubscriptionStore } from '@/store/useSubscriptionStore';
+import { useSubscriptions } from '@/context/SubscriptionContext';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 
 const CATEGORIES = ['All', 'Entertainment', 'Education', 'Health', 'Utilities', 'Finance', 'Other'];
@@ -19,7 +19,7 @@ export default function SubscriptionsScreen() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState(filter || '');
 
-  const { subscriptions, isLoading, fetchSubscriptions } = useSubscriptionStore();
+  const { subscriptions, isLoading, fetchSubscriptions } = useSubscriptions();
 
   const loadData = useCallback(() => {
     fetchSubscriptions(selectedStatus, selectedCategory);
