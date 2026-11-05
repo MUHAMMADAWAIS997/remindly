@@ -1,30 +1,33 @@
+// DatePickerModal Component
+// Provides an interactive calendar modal for choosing a subscription's renewal date.
+// Wraps react-native-calendars inside React Native's built-in Modal component.
+
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
 import { theme } from '@/utils/theme';
 
-interface DatePickerModalProps {
-  visible: boolean;
-  currentDate: Date;
-  onConfirm: (date: Date) => void;
-  onClose: () => void;
-}
-
-export const DatePickerModal: React.FC<DatePickerModalProps> = ({
+export function DatePickerModal({
   visible,
-  currentDate,
+  currentDate = new Date(),
   onConfirm,
   onClose,
-}) => {
+}) {
+  // Format dates as YYYY-MM-DD strings required by the Calendar component
   const formattedCurrent = currentDate.toISOString().split('T')[0];
   const minDateStr = new Date().toISOString().split('T')[0];
 
-  const handleDayPress = (day: any) => {
+  // When a user selects a day on the calendar, construct a new Date object and return it
+  const handleDayPress = (day) => {
     const [year, month, date] = day.dateString.split('-').map(Number);
     const newDate = new Date(year, month - 1, date);
-    onConfirm(newDate);
-    onClose();
+    if (onConfirm) {
+      onConfirm(newDate);
+    }
+    if (onClose) {
+      onClose();
+    }
   };
 
   return (
@@ -34,8 +37,11 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
+      {/* Semi-transparent dark background backdrop */}
       <Pressable style={styles.overlay} onPress={onClose}>
+        {/* Modal content container (prevent taps inside from closing the modal) */}
         <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+          {/* Header with Title and Close button */}
           <View style={styles.header}>
             <Text style={styles.title}>Select Renewal Date</Text>
             <TouchableOpacity onPress={onClose}>
@@ -43,6 +49,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             </TouchableOpacity>
           </View>
 
+          {/* Interactive Month Calendar */}
           <View style={styles.calendarContainer}>
             <Calendar
               current={formattedCurrent}
@@ -67,6 +74,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
             />
           </View>
 
+          {/* Cancel button */}
           <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
@@ -74,7 +82,7 @@ export const DatePickerModal: React.FC<DatePickerModalProps> = ({
       </Pressable>
     </Modal>
   );
-};
+}
 
 const styles = StyleSheet.create({
   overlay: {

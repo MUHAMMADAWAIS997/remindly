@@ -1,52 +1,50 @@
+// SubscriptionForm Component
+// Reusable form used for both creating a new subscription and editing an existing one.
+// Manages inputs for subscription name, category pills, amount, billing cycle, renewal date, and notes.
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { SubscriptionItem } from '@/context/SubscriptionContext';
 import { DatePickerModal } from '@/components/DatePickerModal';
 
-const CATEGORIES: SubscriptionItem['category'][] = ['Entertainment', 'Education', 'Health', 'Utilities', 'Finance', 'Other'];
-const BILLING_CYCLES: { label: string; value: NonNullable<SubscriptionItem['billingCycle']> }[] = [
+// Available categories for subscriptions
+const CATEGORIES = [
+  'Entertainment',
+  'Education',
+  'Health',
+  'Utilities',
+  'Finance',
+  'Other',
+];
+
+// Billing cycle frequency options
+const BILLING_CYCLES = [
   { label: 'Monthly', value: 'monthly' },
   { label: 'Yearly', value: 'yearly' },
   { label: 'Weekly', value: 'weekly' },
   { label: 'Daily', value: 'daily' },
 ];
 
-export interface SubscriptionFormValues {
-  name: string;
-  category: SubscriptionItem['category'];
-  amount: number;
-  billingCycle?: NonNullable<SubscriptionItem['billingCycle']>;
-  expiryDate: string;
-  notes: string;
-}
-
-interface Props {
-  submitLabel: string;
-  defaultValues?: {
-    name?: string;
-    category?: SubscriptionItem['category'];
-    amount?: string;
-    billingCycle?: NonNullable<SubscriptionItem['billingCycle']>;
-    expiryDate?: Date;
-    notes?: string;
-  };
-  onValidSubmit: (values: SubscriptionFormValues) => Promise<void>;
-}
-
-export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: Props) {
-  const [name, setName] = useState(defaultValues?.name ?? '');
-  const [category, setCategory] = useState<SubscriptionItem['category']>(defaultValues?.category ?? 'Entertainment');
-  const [amount, setAmount] = useState(defaultValues?.amount ?? '');
-  const [billingCycle, setBillingCycle] = useState<NonNullable<SubscriptionItem['billingCycle']>>(defaultValues?.billingCycle ?? 'monthly');
-  const [expiryDate, setExpiryDate] = useState(defaultValues?.expiryDate ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
-  const [notes, setNotes] = useState(defaultValues?.notes ?? '');
+export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }) {
+  // Form input states initialized with provided default values (or standard fallbacks)
+  const [name, setName] = useState(defaultValues?.name || '');
+  const [category, setCategory] = useState(defaultValues?.category || 'Entertainment');
+  const [amount, setAmount] = useState(defaultValues?.amount || '');
+  const [billingCycle, setBillingCycle] = useState(defaultValues?.billingCycle || 'monthly');
+  const [expiryDate, setExpiryDate] = useState(
+    defaultValues?.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  );
+  const [notes, setNotes] = useState(defaultValues?.notes || '');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Validate inputs and call the parent submission callback
   const handleSubmit = async () => {
+    // Basic validation: name cannot be empty
     if (!name.trim()) return;
+
+    // Validate that amount is a valid positive number
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount < 0) return;
 
@@ -64,6 +62,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Subscription Name Input */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Name</Text>
         <TextInput
@@ -75,6 +74,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
         />
       </View>
 
+      {/* Amount Input */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Amount ($)</Text>
         <TextInput
@@ -87,6 +87,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
         />
       </View>
 
+      {/* Billing Cycle Pill Selector */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Billing Cycle</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pills}>
@@ -104,6 +105,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
         </ScrollView>
       </View>
 
+      {/* Category Pill Selector */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Category</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pills}>
@@ -113,20 +115,29 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
               style={[styles.pill, category === cat && styles.pillActive]}
               onPress={() => setCategory(cat)}
             >
-              <Text style={[styles.pillText, category === cat && styles.pillTextActive]}>{cat}</Text>
+              <Text style={[styles.pillText, category === cat && styles.pillTextActive]}>
+                {cat}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
 
+      {/* Renewal Date Picker Trigger */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Renewal date</Text>
         <TouchableOpacity style={styles.datePicker} onPress={() => setShowDatePicker(true)}>
           <Ionicons name="calendar-outline" size={20} color={theme.colors.textMuted} />
           <Text style={styles.dateText}>
-            {expiryDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+            {expiryDate.toLocaleDateString(undefined, {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric',
+            })}
           </Text>
         </TouchableOpacity>
+
+        {/* Calendar Modal */}
         <DatePickerModal
           visible={showDatePicker}
           currentDate={expiryDate}
@@ -135,6 +146,7 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
         />
       </View>
 
+      {/* Optional Notes Input */}
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Notes</Text>
         <TextInput
@@ -148,7 +160,12 @@ export function SubscriptionForm({ submitLabel, defaultValues, onValidSubmit }: 
         />
       </View>
 
-      <TouchableOpacity style={[styles.submitButton, loading && styles.submitButtonDisabled]} onPress={handleSubmit} disabled={loading}>
+      {/* Submit Button */}
+      <TouchableOpacity
+        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
         {loading ? (
           <ActivityIndicator color={theme.colors.card} size="small" />
         ) : (

@@ -1,11 +1,15 @@
+// SubscriptionCard Component
+// Renders an individual subscription card displaying its name, category, status, cost, and renewal date.
+// Tapping the card navigates to the detailed view for that subscription.
+
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
-import { SubscriptionItem } from '@/context/SubscriptionContext';
 
-const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
+// Map each subscription category to an appropriate Ionicons icon
+const CATEGORY_ICONS = {
   Entertainment: 'tv-outline',
   Education: 'book-outline',
   Health: 'heart-outline',
@@ -14,7 +18,8 @@ const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name
   Other: 'apps-outline',
 };
 
-function getStatusBadge(status: SubscriptionItem['statusInfo']['status']) {
+// Helper function to return colors and icons based on subscription status
+function getStatusBadge(status) {
   switch (status) {
     case 'Expiring Soon':
       return {
@@ -37,33 +42,46 @@ function getStatusBadge(status: SubscriptionItem['statusInfo']['status']) {
   }
 }
 
-interface Props {
-  item: SubscriptionItem;
-  dimmed?: boolean;
-}
-
-export function SubscriptionCard({ item, dimmed }: Props) {
-  const status = (item.statusInfo?.status || 'Active') as SubscriptionItem['statusInfo']['status'];
+export function SubscriptionCard({ item, dimmed = false }) {
+  // Determine current status and remaining days
+  const status = item.statusInfo?.status || 'Active';
   const daysLeft = item.statusInfo?.daysLeft ?? 0;
   const badge = getStatusBadge(status);
+
+  // If expiring in 7 days or less, show countdown label (e.g. "3d left")
   const statusLabel = daysLeft >= 0 && daysLeft <= 7 ? `${daysLeft}d left` : status;
+
+  // Format renewal date nicely (e.g. "Nov 24, 2026")
+  const formattedDate = new Date(item.expiryDate).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
   return (
     <Pressable
       style={[styles.card, dimmed && styles.dimmed]}
-      onPress={() => router.push(`/subscriptions/${item._id}`)}>
+      onPress={() => router.push(`/subscriptions/${item._id}`)}
+    >
+      {/* Left side: Category icon and details */}
       <View style={styles.left}>
         <View style={styles.badge}>
           <Ionicons
-            name={CATEGORY_ICONS[item.category] ?? 'apps-outline'}
+            name={CATEGORY_ICONS[item.category] || 'apps-outline'}
             size={22}
             color={dimmed ? theme.colors.textMuted : theme.colors.primary}
           />
         </View>
+
         <View style={styles.details}>
-          <Text style={styles.title} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.title} numberOfLines={1}>
+            {item.name}
+          </Text>
+
           <View style={styles.meta}>
-            <Text style={styles.category} numberOfLines={1}>{item.category}</Text>
+            <Text style={styles.category} numberOfLines={1}>
+              {item.category}
+            </Text>
             <Text style={styles.bullet}>•</Text>
             <View style={[styles.statusTag, { backgroundColor: badge.bg }]}>
               {badge.icon}
@@ -74,11 +92,11 @@ export function SubscriptionCard({ item, dimmed }: Props) {
           </View>
         </View>
       </View>
+
+      {/* Right side: Amount and expiry date */}
       <View style={styles.right}>
         <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
-        <Text style={styles.date}>
-          {new Date(item.expiryDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-        </Text>
+        <Text style={styles.date}>{formattedDate}</Text>
       </View>
     </Pressable>
   );
