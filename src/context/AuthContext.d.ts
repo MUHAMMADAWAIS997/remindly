@@ -29,3 +29,4 @@ export interface AuthContextType {
 export declare const AuthContext: React.Context<AuthContextType | null>;
 export declare function AuthProvider(props: { children: React.ReactNode }): React.JSX.Element;
 export declare function useAuth(): AuthContextType;
+

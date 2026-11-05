@@ -40,3 +40,4 @@ export interface SubscriptionContextType {
 export declare const SubscriptionContext: React.Context<SubscriptionContextType | null>;
 export declare function SubscriptionProvider(props: { children: React.ReactNode }): React.JSX.Element;
 export declare function useSubscriptions(): SubscriptionContextType;
+
