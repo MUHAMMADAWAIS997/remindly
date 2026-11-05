@@ -1,3 +1,7 @@
+// Register Screen
+// Allows new users to create an account with first name, last name, gender, email, and password.
+// Simplified into readable helper components and validation functions for React Native beginners.
+
 import React, { useState } from 'react';
 import {
   View,
@@ -16,92 +20,95 @@ import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/utils/theme';
 import { useAuth } from '@/context/AuthContext';
 
-// ── Validation helpers ────────────────────────────────────────────────────────
+// ── Validation Helpers ──────────────────────────────────────────────────────────
+// Simple validation functions with clear, descriptive error messages.
+
 const LETTERS_ONLY = /^[A-Za-z]+$/;
-const EMAIL_RE = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const EMAIL_REGEX = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-function validateFirstName(v: string): string {
-  if (!v.trim()) return 'First name is required';
-  if (/\s/.test(v)) return 'First name cannot contain spaces';
-  if (/[0-9]/.test(v)) return 'First name cannot contain numbers';
-  if (!LETTERS_ONLY.test(v)) return 'First name can only contain letters';
+function validateName(value, fieldLabel) {
+  if (!value || !value.trim()) return `${fieldLabel} is required`;
+  if (/\s/.test(value)) return `${fieldLabel} cannot contain spaces`;
+  if (/[0-9]/.test(value)) return `${fieldLabel} cannot contain numbers`;
+  if (!LETTERS_ONLY.test(value)) return `${fieldLabel} can only contain letters`;
   return '';
 }
 
-function validateLastName(v: string): string {
-  if (!v.trim()) return 'Last name is required';
-  if (/\s/.test(v)) return 'Last name cannot contain spaces';
-  if (/[0-9]/.test(v)) return 'Last name cannot contain numbers';
-  if (!LETTERS_ONLY.test(v)) return 'Last name can only contain letters';
+function validateEmail(email) {
+  if (!email || !email.trim()) return 'Email is required';
+  if (!EMAIL_REGEX.test(email.trim())) return 'Please enter a valid email address';
   return '';
 }
 
-function validateEmail(v: string): string {
-  if (!v.trim()) return 'Email is required';
-  if (!EMAIL_RE.test(v.trim())) return 'Please enter a valid email address';
+function validatePassword(password) {
+  if (!password) return 'Password is required';
+  if (password.length < 6) return 'Password must be at least 6 characters';
+  if (password.length > 50) return 'Password is too long';
   return '';
 }
 
-function validatePassword(v: string): string {
-  if (!v) return 'Password is required';
-  if (v.length < 6) return 'Password must be at least 6 characters';
-  if (v.length > 50) return 'Password is too long';
+function validateConfirmPassword(password, confirmPassword) {
+  if (!confirmPassword) return 'Please confirm your password';
+  if (password !== confirmPassword) return 'Passwords do not match';
   return '';
 }
 
-function validateConfirmPassword(pass: string, confirm: string): string {
-  if (!confirm) return 'Please confirm your password';
-  if (pass !== confirm) return 'Passwords do not match';
+function validateGender(gender) {
+  if (!gender) return 'Please select your gender';
   return '';
 }
 
-// ── Input component ───────────────────────────────────────────────────────────
-interface FieldProps {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  error?: string;
-  touched?: boolean;
-  placeholder?: string;
-  keyboardType?: React.ComponentProps<typeof TextInput>['keyboardType'];
-  secureTextEntry?: boolean;
-  autoCapitalize?: React.ComponentProps<typeof TextInput>['autoCapitalize'];
-  editable?: boolean;
-}
+// ── Reusable Input Field Component ─────────────────────────────────────────────
+// Renders a label, text input, optional password visibility toggle, and error text.
 
-function Field({
-  label, value, onChange, error, touched, placeholder,
-  keyboardType, secureTextEntry, autoCapitalize = 'words', editable = true,
-}: FieldProps) {
-  const [showPw, setShowPw] = useState(false);
-  const isPassword = secureTextEntry;
-  const showError = touched && !!error;
+function FormField({
+  label,
+  value,
+  onChangeText,
+  error,
+  touched,
+  placeholder,
+  keyboardType = 'default',
+  secureTextEntry = false,
+  autoCapitalize = 'words',
+  editable = true,
+}) {
+  const [showPassword, setShowPassword] = useState(false);
+  const showError = touched && Boolean(error);
 
   return (
     <View style={fieldStyles.group}>
       <Text style={fieldStyles.label}>{label}</Text>
+
       <View style={[fieldStyles.inputWrap, showError && fieldStyles.inputError]}>
         <TextInput
           style={fieldStyles.input}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textMuted}
           value={value}
-          onChangeText={onChange}
+          onChangeText={onChangeText}
           keyboardType={keyboardType}
-          secureTextEntry={isPassword && !showPw}
+          secureTextEntry={secureTextEntry && !showPassword}
           autoCapitalize={autoCapitalize}
           editable={editable}
         />
-        {isPassword && (
-          <TouchableOpacity onPress={() => setShowPw(s => !s)} style={fieldStyles.eyeBtn}>
+
+        {/* Eye icon toggle for password fields */}
+        {secureTextEntry && (
+          <TouchableOpacity
+            onPress={() => setShowPassword((prev) => !prev)}
+            style={fieldStyles.eyeBtn}
+          >
             <Ionicons
-              name={showPw ? 'eye-off-outline' : 'eye-outline'}
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
               size={20}
               color={theme.colors.textMuted}
             />
           </TouchableOpacity>
         )}
       </View>
+
+      {/* Error message row */}
       {showError && (
         <View style={fieldStyles.errorRow}>
           <Ionicons name="alert-circle-outline" size={13} color={theme.colors.error} />
@@ -112,8 +119,263 @@ function Field({
   );
 }
 
+// ── Reusable Gender Toggle Component ───────────────────────────────────────────
+// Renders side-by-side selectable pills for "Male" and "Female".
+
+function GenderToggle({ value, onChange, error, touched }) {
+  const showError = touched && Boolean(error);
+
+  return (
+    <View style={genderStyles.group}>
+      <Text style={genderStyles.label}>Gender</Text>
+
+      <View style={[genderStyles.toggleRow, showError && genderStyles.toggleError]}>
+        {/* Male Option */}
+        <TouchableOpacity
+          style={[genderStyles.option, value === 'Male' && genderStyles.optionActive]}
+          onPress={() => onChange('Male')}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name="male"
+            size={16}
+            color={value === 'Male' ? theme.colors.card : theme.colors.textMuted}
+          />
+          <Text style={[genderStyles.optionText, value === 'Male' && genderStyles.optionTextActive]}>
+            Male
+          </Text>
+        </TouchableOpacity>
+
+        <View style={genderStyles.divider} />
+
+        {/* Female Option */}
+        <TouchableOpacity
+          style={[genderStyles.option, value === 'Female' && genderStyles.optionActiveFemale]}
+          onPress={() => onChange('Female')}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name="female"
+            size={16}
+            color={value === 'Female' ? theme.colors.card : theme.colors.textMuted}
+          />
+          <Text style={[genderStyles.optionText, value === 'Female' && genderStyles.optionTextActive]}>
+            Female
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Error message row */}
+      {showError && (
+        <View style={fieldStyles.errorRow}>
+          <Ionicons name="alert-circle-outline" size={13} color={theme.colors.error} />
+          <Text style={fieldStyles.errorText}>{error}</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ── Main Register Screen Component ─────────────────────────────────────────────
+
+export default function RegisterScreen() {
+  const { register, isLoading } = useAuth();
+
+  // Single state object holding form inputs
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    gender: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  // Track which fields have been interacted with (to show errors only after touch)
+  const [touched, setTouched] = useState({
+    firstName: false,
+    lastName: false,
+    gender: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
+
+  // Calculate current validation errors for each field
+  const errors = {
+    firstName: validateName(form.firstName, 'First name'),
+    lastName: validateName(form.lastName, 'Last name'),
+    gender: validateGender(form.gender),
+    email: validateEmail(form.email),
+    password: validatePassword(form.password),
+    confirmPassword: validateConfirmPassword(form.password, form.confirmPassword),
+  };
+
+  // Helper to update a field value and mark it as touched
+  const updateField = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Check if any errors currently exist in the form
+  const hasErrors = Object.values(errors).some(Boolean);
+
+  // Handle form submission
+  const handleRegister = async () => {
+    // Surface all errors by marking every field as touched
+    setTouched({
+      firstName: true,
+      lastName: true,
+      gender: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    if (hasErrors) return;
+
+    const success = await register(
+      form.firstName.trim(),
+      form.lastName.trim(),
+      form.gender,
+      form.email.trim(),
+      form.password
+    );
+
+    if (success) {
+      router.replace('/(tabs)/home');
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Create account</Text>
+            <Text style={styles.subtitle}>Fill in your details to get started</Text>
+          </View>
+
+          {/* Form Fields */}
+          <View style={styles.form}>
+            {/* First Name & Last Name in one row */}
+            <View style={styles.nameRow}>
+              <View style={styles.nameField}>
+                <FormField
+                  label="First Name"
+                  value={form.firstName}
+                  onChangeText={(val) => updateField('firstName', val)}
+                  error={errors.firstName}
+                  touched={touched.firstName}
+                  placeholder="John"
+                  autoCapitalize="words"
+                  editable={!isLoading}
+                />
+              </View>
+              <View style={styles.nameField}>
+                <FormField
+                  label="Last Name"
+                  value={form.lastName}
+                  onChangeText={(val) => updateField('lastName', val)}
+                  error={errors.lastName}
+                  touched={touched.lastName}
+                  placeholder="Doe"
+                  autoCapitalize="words"
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            {/* Gender Toggle */}
+            <GenderToggle
+              value={form.gender}
+              onChange={(val) => updateField('gender', val)}
+              error={errors.gender}
+              touched={touched.gender}
+            />
+
+            {/* Email Field */}
+            <FormField
+              label="Email Address"
+              value={form.email}
+              onChangeText={(val) => updateField('email', val)}
+              error={errors.email}
+              touched={touched.email}
+              placeholder="you@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+
+            {/* Password Field */}
+            <FormField
+              label="Password"
+              value={form.password}
+              onChangeText={(val) => updateField('password', val)}
+              error={errors.password}
+              touched={touched.password}
+              placeholder="Min. 6 characters"
+              secureTextEntry
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+
+            {/* Confirm Password Field */}
+            <FormField
+              label="Confirm Password"
+              value={form.confirmPassword}
+              onChangeText={(val) => updateField('confirmPassword', val)}
+              error={errors.confirmPassword}
+              touched={touched.confirmPassword}
+              placeholder="Re-enter your password"
+              secureTextEntry
+              autoCapitalize="none"
+              editable={!isLoading}
+            />
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleRegister}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={theme.colors.card} size="small" />
+              ) : (
+                <Text style={styles.buttonText}>Create Account</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Footer Navigation Link to Login */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account? </Text>
+            <Link href="/login" asChild>
+              <TouchableOpacity disabled={isLoading}>
+                <Text style={styles.footerLink}>Log in</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+// ── Stylesheets ────────────────────────────────────────────────────────────────
+
 const fieldStyles = StyleSheet.create({
-  group: { gap: 6 },
+  group: {
+    gap: 6,
+  },
   label: {
     ...theme.typography.bodySm,
     fontWeight: '600',
@@ -138,7 +400,10 @@ const fieldStyles = StyleSheet.create({
     ...theme.typography.body,
     color: theme.colors.text,
   },
-  eyeBtn: { paddingLeft: 8, paddingVertical: 8 },
+  eyeBtn: {
+    paddingLeft: 8,
+    paddingVertical: 8,
+  },
   errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -150,64 +415,10 @@ const fieldStyles = StyleSheet.create({
   },
 });
 
-// ── Gender Toggle ─────────────────────────────────────────────────────────────
-interface GenderToggleProps {
-  value: 'Male' | 'Female' | '';
-  onChange: (v: 'Male' | 'Female') => void;
-  error?: string;
-  touched?: boolean;
-}
-
-function GenderToggle({ value, onChange, error, touched }: GenderToggleProps) {
-  const showError = touched && !!error;
-  return (
-    <View style={genderStyles.group}>
-      <Text style={genderStyles.label}>Gender</Text>
-      <View style={[genderStyles.toggleRow, showError && genderStyles.toggleError]}>
-        <TouchableOpacity
-          style={[genderStyles.option, value === 'Male' && genderStyles.optionActive]}
-          onPress={() => onChange('Male')}
-          activeOpacity={0.8}
-        >
-          <Ionicons
-            name="male"
-            size={16}
-            color={value === 'Male' ? theme.colors.card : theme.colors.textMuted}
-          />
-          <Text style={[genderStyles.optionText, value === 'Male' && genderStyles.optionTextActive]}>
-            Male
-          </Text>
-        </TouchableOpacity>
-
-        <View style={genderStyles.divider} />
-
-        <TouchableOpacity
-          style={[genderStyles.option, value === 'Female' && genderStyles.optionActiveFemale]}
-          onPress={() => onChange('Female')}
-          activeOpacity={0.8}
-        >
-          <Ionicons
-            name="female"
-            size={16}
-            color={value === 'Female' ? theme.colors.card : theme.colors.textMuted}
-          />
-          <Text style={[genderStyles.optionText, value === 'Female' && genderStyles.optionTextActive]}>
-            Female
-          </Text>
-        </TouchableOpacity>
-      </View>
-      {showError && (
-        <View style={fieldStyles.errorRow}>
-          <Ionicons name="alert-circle-outline" size={13} color={theme.colors.error} />
-          <Text style={fieldStyles.errorText}>{error}</Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
 const genderStyles = StyleSheet.create({
-  group: { gap: 6 },
+  group: {
+    gap: 6,
+  },
   label: {
     ...fieldStyles.label,
   },
@@ -235,7 +446,7 @@ const genderStyles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
   },
   optionActiveFemale: {
-    backgroundColor: '#EC4899', // pink for female
+    backgroundColor: '#EC4899', // Pink for female
   },
   optionText: {
     ...theme.typography.body,
@@ -250,196 +461,6 @@ const genderStyles = StyleSheet.create({
     backgroundColor: theme.colors.border,
   },
 });
-
-// ── Register Screen ───────────────────────────────────────────────────────────
-type Gender = 'Male' | 'Female' | '';
-
-interface FormState {
-  firstName: string;
-  lastName: string;
-  gender: Gender;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
-interface TouchedState {
-  firstName: boolean;
-  lastName: boolean;
-  gender: boolean;
-  email: boolean;
-  password: boolean;
-  confirmPassword: boolean;
-}
-
-export default function RegisterScreen() {
-  const { register, isLoading } = useAuth();
-
-  const [form, setForm] = useState<FormState>({
-    firstName: '',
-    lastName: '',
-    gender: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const [touched, setTouched] = useState<TouchedState>({
-    firstName: false,
-    lastName: false,
-    gender: false,
-    email: false,
-    password: false,
-    confirmPassword: false,
-  });
-
-  const errors = {
-    firstName: validateFirstName(form.firstName),
-    lastName: validateLastName(form.lastName),
-    gender: form.gender === '' ? 'Please select your gender' : '',
-    email: validateEmail(form.email),
-    password: validatePassword(form.password),
-    confirmPassword: validateConfirmPassword(form.password, form.confirmPassword),
-  };
-
-  const touch = (field: keyof TouchedState) =>
-    setTouched(t => ({ ...t, [field]: true }));
-
-  const setField = (field: keyof FormState) => (value: string) => {
-    setForm(f => ({ ...f, [field]: value }));
-    setTouched(t => ({ ...t, [field]: true }));
-  };
-
-  const hasErrors = Object.values(errors).some(Boolean);
-
-  const handleRegister = async () => {
-    // Mark all fields as touched to surface all errors
-    setTouched({ firstName: true, lastName: true, gender: true, email: true, password: true, confirmPassword: true });
-    if (hasErrors) return;
-    const success = await register(form.firstName.trim(), form.lastName.trim(), form.gender as 'Male' | 'Female', form.email.trim(), form.password);
-    if (success) {
-      router.replace('/(tabs)/home');
-    }
-  };
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>Create account</Text>
-            <Text style={styles.subtitle}>Fill in your details to get started</Text>
-          </View>
-
-          <View style={styles.form}>
-            {/* Row: First Name + Last Name side by side */}
-            <View style={styles.nameRow}>
-              <View style={styles.nameField}>
-                <Field
-                  label="First Name"
-                  value={form.firstName}
-                  onChange={setField('firstName')}
-                  error={errors.firstName}
-                  touched={touched.firstName}
-                  placeholder="John"
-                  autoCapitalize="words"
-                  editable={!isLoading}
-                />
-              </View>
-              <View style={styles.nameField}>
-                <Field
-                  label="Last Name"
-                  value={form.lastName}
-                  onChange={setField('lastName')}
-                  error={errors.lastName}
-                  touched={touched.lastName}
-                  placeholder="Doe"
-                  autoCapitalize="words"
-                  editable={!isLoading}
-                />
-              </View>
-            </View>
-
-            {/* Gender Toggle */}
-            <GenderToggle
-              value={form.gender}
-              onChange={(g) => { setForm(f => ({ ...f, gender: g })); touch('gender'); }}
-              error={errors.gender}
-              touched={touched.gender}
-            />
-
-            {/* Email */}
-            <Field
-              label="Email Address"
-              value={form.email}
-              onChange={setField('email')}
-              error={errors.email}
-              touched={touched.email}
-              placeholder="you@example.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={!isLoading}
-            />
-
-            {/* Password */}
-            <Field
-              label="Password"
-              value={form.password}
-              onChange={setField('password')}
-              error={errors.password}
-              touched={touched.password}
-              placeholder="Min. 6 characters"
-              secureTextEntry
-              autoCapitalize="none"
-              editable={!isLoading}
-            />
-
-            {/* Confirm Password */}
-            <Field
-              label="Confirm Password"
-              value={form.confirmPassword}
-              onChange={setField('confirmPassword')}
-              error={errors.confirmPassword}
-              touched={touched.confirmPassword}
-              placeholder="Re-enter your password"
-              secureTextEntry
-              autoCapitalize="none"
-              editable={!isLoading}
-            />
-
-            <TouchableOpacity
-              style={[styles.button, (isLoading) && styles.buttonDisabled]}
-              onPress={handleRegister}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={theme.colors.card} size="small" />
-              ) : (
-                <Text style={styles.buttonText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <Link href="/login" asChild>
-              <TouchableOpacity disabled={isLoading}>
-                <Text style={styles.footerLink}>Log in</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-}
 
 const styles = StyleSheet.create({
   safeArea: {

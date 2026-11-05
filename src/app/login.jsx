@@ -1,5 +1,18 @@
+// Login Screen
+// Allows existing users to sign in with their email and password.
+// Uses useAuth() from AuthContext to handle authentication and state.
+
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -11,7 +24,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const { login, isLoading } = useAuth();
 
+  // Validate inputs and attempt login
   const handleLogin = async () => {
+    // Both fields are required
     if (!email.trim() || !password.trim()) {
       Toast.show({
         type: 'error',
@@ -20,6 +35,8 @@ export default function LoginScreen() {
       });
       return;
     }
+
+    // Call the login action from AuthContext
     const success = await login(email.trim(), password);
     if (success) {
       router.replace('/(tabs)/home');
@@ -28,15 +45,18 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
+        {/* Welcome Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Welcome back</Text>
         </View>
 
+        {/* Login Form */}
         <View style={styles.form}>
+          {/* Email Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
             <TextInput
@@ -51,6 +71,7 @@ export default function LoginScreen() {
             />
           </View>
 
+          {/* Password Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <TextInput
@@ -64,8 +85,9 @@ export default function LoginScreen() {
             />
           </View>
 
-          <TouchableOpacity 
-            style={[styles.button, isLoading && styles.buttonDisabled]} 
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={isLoading}
           >
@@ -77,6 +99,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Footer Navigation Link to Register */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
           <Link href="/register" asChild>
