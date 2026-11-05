@@ -21,3 +21,4 @@ export declare function SubscriptionForm(props: {
   };
   onValidSubmit: (values: SubscriptionFormValues) => Promise<void>;
 }): React.JSX.Element;
+
